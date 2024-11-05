@@ -60,7 +60,7 @@ def test_get_usage_data_success(mock_get_messages, mock_calculate_credits):
     response = client.get("/usage")
 
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["usage"]
     assert len(data) == 2
 
     assert data[0]["message_id"] == 1109
@@ -88,4 +88,4 @@ def test_get_usage_data_empty_messages():
         response = client.get("/usage")
 
         assert response.status_code == 200
-        assert response.json() == []
+        assert response.json()["usage"] == []

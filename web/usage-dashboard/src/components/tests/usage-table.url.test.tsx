@@ -8,7 +8,6 @@ import '@testing-library/jest-dom'
 
 vi.mock('../../lib/client')
 
-// Create a wrapper component to access current location
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.search}</div>
@@ -62,21 +61,17 @@ const getRowData = () => {
   })
 }
 
-const setupTestWithUrl = async (initialUrl: string) => {
-  vi.mocked(fetchUsageData).mockResolvedValue(mockData)
+const setupTestWithUrl = async (initialUrl: string, testData = mockData) => {
+  vi.mocked(fetchUsageData).mockResolvedValue(testData)
   renderWithProviders(<UsageTable />, initialUrl)
   
-  // Wait for table to be fully loaded
   const table = await screen.findByTestId('usage-table-content')
   
-  // Wait for table body to be populated
   const tbody = table.querySelector('tbody')
   if (!tbody) throw new Error('Table body not found')
   
-  // Wait for cells to be rendered
   await within(tbody).findAllByRole('cell')
 
-  // Get headers from the specific table
   const thead = table.querySelector('thead')
 
   const reportNameHeader = within(thead!).getByRole('columnheader', { name: /report name/i })
@@ -157,68 +152,68 @@ describe('UsageTable URL Updates', () => {
       vi.resetAllMocks()
     })
 
-    it('applies single column sort from URL', async () => {
+    it('applies ascending sort from URL', async () => {
       const { reportNameHeader } = await setupTestWithUrl('?sort=report_name%3Aasc')
-      // Wait for sort to be applied
       await within(reportNameHeader).findByTestId('sort-asc')
       
       expect(getRowData().map(row => row.reportName))
         .toEqual(['Daily Report', 'Weekly Report'])
+    })
 
-      vi.resetAllMocks()
-      const { reportNameHeader: descHeader } = await setupTestWithUrl('?sort=report_name%3Adesc')
-      await within(descHeader).findByTestId('sort-desc')
+    it('applies descending sort from URL', async () => {
+      const { reportNameHeader } = await setupTestWithUrl('?sort=report_name%3Adesc')
+      await within(reportNameHeader).findByTestId('sort-desc')
       
       expect(getRowData().map(row => row.reportName))
         .toEqual(['Weekly Report', 'Daily Report'])
     })
 
-    // it('applies multi-column sort from URL', async () => {
-    //   const extendedMockData = [
-    //     ...mockData,
-    //     { message_id: 3, timestamp: '2024-03-20T12:00:00Z', report_name: 'Daily Report', credits_used: 15 },
-    //     { message_id: 4, timestamp: '2024-03-20T13:00:00Z', report_name: 'Weekly Report', credits_used: 15 },
-    //   ]
-    //   vi.mocked(fetchUsageData).mockResolvedValue(extendedMockData)
+    it('applies multi-column sort from URL', async () => {
+      const extendedMockData = [
+        ...mockData,
+        { message_id: 3, timestamp: '2024-03-20T12:00:00Z', report_name: 'Daily Report', credits_used: 15 },
+        { message_id: 4, timestamp: '2024-03-20T13:00:00Z', report_name: 'Weekly Report', credits_used: 15 },
+      ]
 
-    //   await setupTestWithUrl('?sort=report_name%3Aasc%2Ccredits_used%3Adesc')
-    //   const data = await getRowData()
-    //   expect(data).toEqual([
-    //     { reportName: 'Daily Report', creditsUsed: 15 },
-    //     { reportName: 'Daily Report', creditsUsed: 10 },
-    //     { reportName: 'Weekly Report', creditsUsed: 15 },
-    //     { reportName: 'Weekly Report', creditsUsed: 5 },
-    //   ])
-    // })
+      await setupTestWithUrl('?sort=report_name%3Aasc%2Ccredits_used%3Adesc', extendedMockData)
+      const data = getRowData()
+      expect(data).toEqual([
+        { reportName: 'Daily Report', creditsUsed: 15 },
+        { reportName: 'Daily Report', creditsUsed: 10 },
+        { reportName: 'Weekly Report', creditsUsed: 15 },
+        { reportName: 'Weekly Report', creditsUsed: 5 },
+      ])
+    })
 
-    // it('shows correct sort indicators when loading from URL', async () => {
-    //   await setupTestWithUrl('?sort=report_name%3Aasc%2Ccredits_used%3Adesc')
+    it('shows correct sort indicators when loading from URL', async () => {
+      await setupTestWithUrl('?sort=report_name%3Aasc%2Ccredits_used%3Adesc')
       
-    //   const reportNameHeader = screen.getByRole('columnheader', { name: /report name/i })
-    //   const creditsHeader = screen.getByRole('columnheader', { name: /credits used/i })
+      const reportNameHeader = screen.getByRole('columnheader', { name: /report name/i })
+      const creditsHeader = screen.getByRole('columnheader', { name: /credits used/i })
 
-    //   expect(within(reportNameHeader).getByTestId('sort-asc')).toBeInTheDocument()
-    //   expect(within(creditsHeader).getByTestId('sort-desc')).toBeInTheDocument()
-    // })
+      expect(within(reportNameHeader).getByTestId('sort-asc')).toBeInTheDocument()
+      expect(within(creditsHeader).getByTestId('sort-desc')).toBeInTheDocument()
+    })
 
-    // it('handles invalid sort parameters gracefully', async () => {
-    //   // Test with invalid column name
-    //   await setupTestWithUrl('?sort=invalid_column%3Aasc')
-    //   const invalidColumnData = await getRowData()
-    //   expect(invalidColumnData.map(row => row.reportName))
-    //     .toEqual(['Daily Report', 'Weekly Report']) // Should show default order
+    it('handles invalid column name gracefully', async () => {
+      await setupTestWithUrl('?sort=invalid_column%3Aasc')
+      const data = await getRowData()
+      expect(data.map(row => row.reportName))
+        .toEqual(['Daily Report', 'Weekly Report'])
+    })
 
-    //   // Test with invalid sort direction
-    //   await setupTestWithUrl('?sort=report_name%3Ainvalid')
-    //   const invalidDirectionData = await getRowData()
-    //   expect(invalidDirectionData.map(row => row.reportName))
-    //     .toEqual(['Daily Report', 'Weekly Report']) // Should show default order
+    it('handles invalid sort direction gracefully', async () => {
+      await setupTestWithUrl('?sort=report_name%3Ainvalid')
+      const data = await getRowData()
+      expect(data.map(row => row.reportName))
+        .toEqual(['Daily Report', 'Weekly Report'])
+    })
 
-    //   // Test with malformed sort parameter
-    //   await setupTestWithUrl('?sort=invalid_format')
-    //   const invalidFormatData = await getRowData()
-    //   expect(invalidFormatData.map(row => row.reportName))
-    //     .toEqual(['Daily Report', 'Weekly Report']) // Should show default order
-    // })
+    it('handles malformed sort parameter gracefully', async () => {
+      await setupTestWithUrl('?sort=invalid_format')
+      const data = await getRowData()
+      expect(data.map(row => row.reportName))
+        .toEqual(['Daily Report', 'Weekly Report'])
+    })
   })
 }) 

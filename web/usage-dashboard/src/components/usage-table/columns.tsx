@@ -18,6 +18,7 @@ export const columns = [
   columnHelper.accessor('report_name', {
     header: 'Report Name',
     cell: info => info.getValue() || '',
+    sortingFn: 'alphanumeric',
     enableSorting: true,
     sortDescFirst: false,
   }),

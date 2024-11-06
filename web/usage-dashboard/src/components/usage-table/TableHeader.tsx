@@ -9,7 +9,7 @@ interface UsageTableHeaderProps {
 
 export function UsageTableHeader({ headerGroups }: UsageTableHeaderProps) {
   return (
-    <TableHeader>
+    <TableHeader data-testid="usage-table-header">
       {headerGroups.map(headerGroup => (
         <TableRow key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -24,9 +24,9 @@ export function UsageTableHeader({ headerGroups }: UsageTableHeaderProps) {
                   {flexRender(header.column.columnDef.header, header.getContext())}
                   {header.column.getCanSort() && (
                     {
-                      asc: <ChevronUp className="ml-2 h-4 w-4" />,
-                      desc: <ChevronDown className="ml-2 h-4 w-4" />,
-                      false: <ChevronsUpDown className="ml-2 h-4 w-4" />,
+                      asc: <ChevronUp className="ml-2 h-4 w-4" data-testid="sort-asc" />,
+                      desc: <ChevronDown className="ml-2 h-4 w-4" data-testid="sort-desc" />,
+                      false: <ChevronsUpDown className="ml-2 h-4 w-4" data-testid="sort-neutral" />,
                     }[header.column.getIsSorted() as string] ?? null
                   )}
                 </div>

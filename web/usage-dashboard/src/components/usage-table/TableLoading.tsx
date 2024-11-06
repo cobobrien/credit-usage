@@ -12,7 +12,7 @@ interface TableLoadingProps {
 
 export function TableLoading({ table, columnCount }: TableLoadingProps) {
   return (
-    <Card className="w-full">
+    <Card className="w-full" data-testid="usage-table-loading">
       <CardContent>
         <Table>
           <UsageTableHeader headerGroups={table.getHeaderGroups()} />

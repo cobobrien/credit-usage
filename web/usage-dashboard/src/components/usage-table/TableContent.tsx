@@ -64,6 +64,7 @@ export function UsageTableContent() {
       sorting,
       pagination,
     },
+    isMultiSortEvent: () => true,
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
@@ -80,7 +81,7 @@ export function UsageTableContent() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full" data-testid="usage-table-content">
       <CardContent>
         <Table>
           <UsageTableHeader headerGroups={table.getHeaderGroups()} />

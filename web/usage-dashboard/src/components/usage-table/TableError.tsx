@@ -6,7 +6,7 @@ interface TableErrorProps {
 
 export function TableError({ error }: TableErrorProps) {
   return (
-    <Card className="w-full">
+    <Card className="w-full" data-testid="usage-table-error">
       <CardHeader>
         <CardTitle>Error</CardTitle>
       </CardHeader>

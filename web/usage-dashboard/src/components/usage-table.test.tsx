@@ -49,6 +49,34 @@ describe('UsageTable', () => {
   it('displays loading state initially', () => {
     vi.mocked(fetchUsageData).mockImplementation(() => new Promise(() => {}))
     renderWithProviders(<UsageTable />)
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByTestId('usage-table-loading')).toBeInTheDocument()
+  })
+
+  it('displays error state when fetch fails', async () => {
+    const error = new Error('Failed to fetch data')
+    vi.mocked(fetchUsageData).mockRejectedValue(error)
+    
+    renderWithProviders(<UsageTable />)
+    
+    expect(await screen.findByTestId('usage-table-error')).toBeInTheDocument()
+    expect(screen.getByText(`Error loading usage data: ${error.message}`)).toBeInTheDocument()
+  })
+
+  it('renders table with data successfully', async () => {
+    vi.mocked(fetchUsageData).mockResolvedValue(mockUsageData)
+    
+    renderWithProviders(<UsageTable />)
+    
+    expect(await screen.findByTestId('usage-table-content')).toBeInTheDocument()
+    expect(screen.queryByTestId('usage-table-loading')).not.toBeInTheDocument()
+    
+    expect(screen.getByTestId('usage-table-header')).toBeInTheDocument()
+    
+    expect(screen.getByText('Daily Report')).toBeInTheDocument()
+    expect(screen.getByText('10.00')).toBeInTheDocument()
+    expect(screen.getByText('5.00')).toBeInTheDocument()
+    
+    expect(screen.getByText('20-03-2024 10:00')).toBeInTheDocument()
+    expect(screen.getByText('20-03-2024 11:00')).toBeInTheDocument()
   })
 }) 

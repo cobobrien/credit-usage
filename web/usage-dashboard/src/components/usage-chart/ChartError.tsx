@@ -6,13 +6,15 @@ interface ChartErrorProps {
 
 export function ChartError({ error }: ChartErrorProps) {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Error</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-red-500">Error loading chart data: {error.message}</p>
-      </CardContent>
-    </Card>
+    <div data-testid="chart-error">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Error</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-500">Error loading chart data: {error.message}</p>
+        </CardContent>
+      </Card>
+    </div>
   )
 } 

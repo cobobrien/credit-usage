@@ -34,7 +34,7 @@ export function ChartContent() {
   return (
     <Card className="w-full">
       <CardContent className="pt-6">
-        <div className="h-[300px]">
+        <div className="h-[300px]" data-testid="chart-content">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />

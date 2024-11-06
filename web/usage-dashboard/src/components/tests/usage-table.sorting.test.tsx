@@ -2,11 +2,11 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import UsageTable from './usage-table'
-import { fetchUsageData } from '../lib/client'
+import UsageTable from '../usage-table'
+import { fetchUsageData } from '../../lib/client'
 import '@testing-library/jest-dom'
 
-vi.mock('../lib/client')
+vi.mock('../../lib/client')
 
 const mockData = [
   { message_id: 1, timestamp: '2024-03-20T10:00:00Z', report_name: 'Daily Report', credits_used: 10 },

@@ -2,11 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import UsageTable from './usage-table'
-import { fetchUsageData } from '../lib/client'
+import UsageTable from '../usage-table'
+import { fetchUsageData } from '../../lib/client'
 import '@testing-library/jest-dom'
 
-vi.mock('../lib/client')
+vi.mock('../../lib/client')
 
 const mockUsageData = [
   {

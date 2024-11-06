@@ -9,9 +9,8 @@ import {
   SortingState,
   flexRender,
 } from '@tanstack/react-table'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
 import { type UsageData, fetchUsageData } from '@/lib/client'
 import { columns } from './columns'
 import { UsageTableHeader } from './TableHeader'

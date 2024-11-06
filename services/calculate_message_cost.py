@@ -20,7 +20,9 @@ def calculate_character_cost(text: str) -> float:
 
 def get_words(text: str) -> List[str]:
     """Extracts words from text using regex pattern."""
-    return re.findall(r"\b\w+\b", text)
+    # Remove punctuation except apostrophes and hyphens
+    cleaned = "".join(c for c in text if c.isalnum() or c in "'- ")
+    return cleaned.lower().split()
 
 
 def calculate_word_cost(word: str) -> float:

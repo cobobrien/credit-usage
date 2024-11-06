@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from api.models import Message, Report
-from services.calculate_message_cost import calculate_message_credits
+from services.calculate_message_cost import calculate_message_credits, get_words
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def mock_get_report():
 
 def test_report_based_cost(mock_get_report):
     """Test when message has a valid report_id.
-    
+
     Calculation:
     - Report cost: 10.0
     Total: 10.0
@@ -51,7 +51,7 @@ def test_report_not_found_fallback(mock_get_report):
 
 def test_base_cost():
     """Test base cost of 1 credit.
-    
+
     Calculation:
     - Base cost: 1.0
     Total: 1.0
@@ -64,7 +64,7 @@ def test_base_cost():
 
 def test_character_count():
     """Test 0.05 credits per character.
-    
+
     Calculation:
     - Base cost: 1.0
     - Characters (3 * 0.05): 0.15
@@ -113,7 +113,7 @@ def test_third_vowel_cost():
 
 def test_length_penalty():
     """Test penalty for messages over 100 characters.
-    
+
     Calculation:
     - Base cost: 1.0
     - Characters (101 * 0.05): 5.05
@@ -191,7 +191,7 @@ def test_palindrome_multiplier():
 
 def test_minimum_credit_cost():
     """Test that credit cost never goes below 1.0.
-    
+
     Calculation:
     - Base cost: 1.0
     - Characters (3 * 0.05): 0.15
@@ -207,17 +207,64 @@ def test_minimum_credit_cost():
 
 def test_complex_scenario():
     """Test combining multiple rules.
-    
+
     Calculation:
     - Base cost: 1.0
-    - Characters (27 * 0.05): 1.35
-    - Words (6 words): 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.3 = 0.8
-    - Third vowel costs (a, a): 2 * 0.3 = 0.6
-    - Unique words bonus: -2.0
-    Total before multiplier: 1.0 + 1.35 + 0.8 + 0.6 - 2.0 = 1.75
-    Final after palindrome multiplier: 1.75 * 2 = 3.5
-    Final: 3.5
+    - Characters (30 * 0.05): 1.5
+    - Words: 0.1 + 0.1 + 0.1 + 0.2 + 0.1 + 0.2 + 0.2 = 1.0
+    - Third vowel costs (3 'a's in positions 6,12,18): 3 * 0.3 = 0.9
+    - Unique words bonus: 0.0 (not applied - 'a' appears multiple times)
+    Total before multiplier: 1.0 + 1.5 + 1.0 + 0.9 = 4.4
+    Final after palindrome multiplier: 4.4 * 2 = 8.8
+    Final: 8.8
     """
     message = Message(id=1, text="A man, a plan, a canal Panama!", timestamp="2024-01-01T00:00:00Z")
     _, credits = calculate_message_credits(message)
-    assert credits == 3.5
+    assert credits == 8.8
+
+
+def test_word_definition():
+    """Test that words can include apostrophes and hyphens.
+
+    Calculation:
+    - Base cost: 1.0
+    - Characters (21 * 0.05): 1.05
+    - Words:
+        - "don't" (5 chars): 0.2
+        - "self-aware" (10 chars): 0.3
+    - Third vowel cost (e in position 9): 0.3
+    - Unique words bonus: -2.0
+    Total: 1.0 + 1.05 + 0.5 + 0.3 - 2.0 = 0.85
+    Final: 1.0 (minimum credit cost applied)
+    """
+    message = Message(id=1, text="don't be self-aware", timestamp="2024-01-01T00:00:00Z")
+    _, credits = calculate_message_credits(message)
+    assert credits == 1.0
+
+    # Test that these are counted as single words
+    words = get_words(message.text)
+    assert "don't" in words
+    assert "self-aware" in words
+    assert len(words) == 3  # don't, be, self-aware
+
+
+def test_word_parsing_with_symbols():
+    """Test that word parsing handles various symbols correctly."""
+    test_cases = [
+        # Test case, Expected words
+        ("don't be self-aware!", ["don't", "be", "self-aware"]),
+        ("hello...world", ["hello", "world"]),
+        ("@#$hello&*()world", ["hello", "world"]),
+        ("semi;colon:test", ["semi", "colon", "test"]),
+        ("multiple     spaces", ["multiple", "spaces"]),
+        ("mixed-up's-text's", ["mixed-up's-text's"]),
+        ("email@domain.com", ["email", "domain", "com"]),
+        ("back\\slash/forward", ["back", "slash", "forward"]),
+        ("quote's aren't-hard", ["quote's", "aren't-hard"]),
+        ("numbers123and-456", ["numbers123and-456"]),
+    ]
+
+    for test_input, expected in test_cases:
+        message = Message(id=1, text=test_input, timestamp="2024-01-01T00:00:00Z")
+        words = get_words(message.text)
+        assert words == expected, f"Failed for input: {test_input}\nGot: {words}\nExpected: {expected}"

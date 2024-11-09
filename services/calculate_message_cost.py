@@ -20,9 +20,18 @@ def calculate_character_cost(text: str) -> float:
 
 def get_words(text: str) -> List[str]:
     """Extracts words from text using regex pattern."""
-    # Remove punctuation except apostrophes and hyphens
-    cleaned = "".join(c for c in text if c.isalnum() or c in "'- ")
-    return cleaned.lower().split()
+    # First replace special characters (except apostrophes and hyphens) with spaces
+    result = ""
+    for i, c in enumerate(text):
+        if c.isalnum() or c in "'- ":
+            result += c
+        else:
+            # Add space only if we're not already looking at a space
+            if i == 0 or result[-1] != " ":
+                result += " "
+
+    # Split and filter empty strings
+    return [word for word in result.lower().split() if word]
 
 
 def calculate_word_cost(word: str) -> float:

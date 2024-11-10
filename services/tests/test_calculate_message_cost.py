@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from api.models import Message, Report
-from services.calculate_message_cost import calculate_message_credits, get_words
+from services.calculate_message_cost import calculate_message_credits, get_words, is_palindrome
 
 
 @pytest.fixture
@@ -268,3 +268,52 @@ def test_word_parsing_with_symbols():
         message = Message(id=1, text=test_input, timestamp="2024-01-01T00:00:00Z")
         words = get_words(message.text)
         assert words == expected, f"Failed for input: {test_input}\nGot: {words}\nExpected: {expected}"
+
+
+def test_length_penalty_boundary():
+    """Test length penalty at exactly 100 characters and 101 characters.
+
+    100-char calculation:
+    - Base cost: 1.0
+    - Characters (100 * 0.05): 5.0
+    - Word cost (33 words * 0.1): 3.3
+    - Third vowel cost: 0.0 (no vowels in third positions)
+    - Length penalty: 0.0 (exactly 100 chars)
+    Total: 1.0 + 5.0 + 3.3 = 9.3
+    Final: 9.3
+
+    101-char calculation:
+    - Base cost: 1.0
+    - Characters (101 * 0.05): 5.05
+    - Word cost (34 words * 0.1): 3.4
+    - Third vowel cost: 0.0 (no vowels in third positions)
+    - Length penalty: 5.0 (exceeds 100 chars)
+    Total: 1.0 + 5.05 + 3.4 + 5.0 = 14.45
+    Final: 14.45
+    """
+    # Test exactly 100 characters
+    text_100 = ("bc " * 32) + "bc  "
+    message_100 = Message(id=1, text=text_100, timestamp="2024-01-01T00:00:00Z")
+    _, credits_100 = calculate_message_credits(message_100)
+    assert credits_100 == 9.3
+
+    # Test 101 characters
+    text_101 = ("bc " * 32) + "bc bc"
+    message_101 = Message(id=1, text=text_101, timestamp="2024-01-01T00:00:00Z")
+    _, credits_101 = calculate_message_credits(message_101)
+    assert credits_101 == 14.45
+
+
+def test_complex_palindromes():
+    """Test complex palindromes with mixed casing, symbols, and spacing."""
+    test_cases = [
+        ("Able was I, ere I saw Elba!", True),
+        ("No lemon, no melon", True),
+        ("A Santa at NASA", True),
+        ("Was it a car or a cat I saw?", True),
+        ("Madam, in Eden, I'm Adam.", True),
+        ("Hello, this is not a palindrome!", False),
+    ]
+
+    for test_input, expected in test_cases:
+        assert is_palindrome(test_input) == expected, f"Failed for input: {test_input}\nExpected: {expected}"

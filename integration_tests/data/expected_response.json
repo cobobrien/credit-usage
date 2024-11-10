@@ -1,0 +1,28 @@
+{
+    "usage": [
+        {
+            "message_id": 1000,
+            "timestamp": "2024-04-29T02:08:29.375Z",
+            "report_name": "Tenant Obligations Report",
+            "credits_used": 79.0
+        },
+        {
+            "message_id": 1003,
+            "timestamp": "2024-04-29T10:22:13.926Z",
+            "report_name": null,
+            "credits_used": 2.9
+        },
+        {
+            "message_id": 1004,
+            "timestamp": "2024-04-29T11:54:18.493Z",
+            "report_name": null,
+            "credits_used": 3.7
+        },
+        {
+            "message_id": 1009,
+            "timestamp": "2024-04-29T16:02:31.649Z",
+            "report_name": "Maintenance Responsibilities Report",
+            "credits_used": 94.0
+        }
+    ]
+}

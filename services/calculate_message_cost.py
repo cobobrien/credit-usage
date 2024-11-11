@@ -1,4 +1,5 @@
 import re
+from functools import lru_cache
 from typing import List, Optional, Tuple
 
 from api.models import Message
@@ -34,6 +35,7 @@ def get_words(text: str) -> List[str]:
     return [word for word in result.lower().split() if word]
 
 
+@lru_cache
 def calculate_word_cost(word: str) -> float:
     """Calculates cost for a single word based on its length."""
     word_length = len(word)

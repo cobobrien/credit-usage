@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Optional
 
 import requests as report_requests
@@ -8,6 +9,7 @@ from api.models import Report
 REPORT_API_URL_TEMPLATE = "https://owpublic.blob.core.windows.net/tech-task/reports/{id}"
 
 
+@lru_cache
 def get_report(report_id: int) -> Optional[Report]:
     """Fetch the report cost from the report API."""
     response = report_requests.get(REPORT_API_URL_TEMPLATE.format(id=report_id))

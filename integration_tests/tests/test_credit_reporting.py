@@ -3,9 +3,20 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import app
+from services.calculate_message_cost import calculate_word_cost
+from services.get_report import get_report
+
+
+@pytest.fixture(autouse=True)
+def clear_caches():
+    """Automatically clear all LRU caches before each test"""
+    get_report.cache_clear()
+    calculate_word_cost.cache_clear()
+
 
 client = TestClient(app)
 
